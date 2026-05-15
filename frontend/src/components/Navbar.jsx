@@ -111,12 +111,17 @@ export default function Navbar() {
                     <p onClick={() => navigate('/incoming-requests')} className='cursor-pointer hover:text-red-600 text-sm'>
                        Incoming Requests
                     </p>
+                    
+                    {/* NEW: Donation History Link */}
+                    <p onClick={() => navigate('/donation-history')} className='cursor-pointer hover:text-red-600 text-sm flex items-center gap-2'>
+                      Donation History
+                    </p>
                   </>
                 )}
                 
                 <hr className='my-1' />
                 <p onClick={handleLogout} className='cursor-pointer hover:text-red-600 text-sm'>
-                Logout
+                  Logout
                 </p>
               </div>
             </div>
@@ -286,18 +291,32 @@ export default function Navbar() {
                 )}
               </button>
               
-              {/* Donor Link - Highlighted */}
+              {/* Donor Links - Highlighted */}
               {user?.isDonor && (
-                <button 
-                  onClick={() => handleNavClick('/incoming-requests')} 
-                  className={`flex items-center gap-3 px-6 py-3.5 text-left transition ${
-                    isActive('/incoming-requests') 
-                      ? 'bg-red-100 text-red-700 font-bold border-r-4 border-red-600' 
-                      : 'bg-red-50 text-red-600 font-medium hover:bg-red-100'
-                  }`}
-                >
-                   Incoming Requests
-                </button>
+                <>
+                  <button 
+                    onClick={() => handleNavClick('/incoming-requests')} 
+                    className={`flex items-center gap-3 px-6 py-3.5 text-left transition ${
+                      isActive('/incoming-requests') 
+                        ? 'bg-red-100 text-red-700 font-bold border-r-4 border-red-600' 
+                        : 'bg-red-50 text-red-600 font-medium hover:bg-red-100'
+                    }`}
+                  >
+                     Incoming Requests
+                  </button>
+                  
+                  {/* NEW: Donation History Link for Mobile */}
+                  <button 
+                    onClick={() => handleNavClick('/donation-history')} 
+                    className={`flex items-center gap-3 px-6 py-3.5 text-left transition ${
+                      isActive('/donation-history') 
+                        ? 'bg-purple-100 text-purple-700 font-bold border-r-4 border-purple-600' 
+                        : 'bg-purple-50 text-purple-600 font-medium hover:bg-purple-100'
+                    }`}
+                  >
+                    Donation History
+                  </button>
+                </>
               )}
               
               <hr className='mx-4 my-2' />

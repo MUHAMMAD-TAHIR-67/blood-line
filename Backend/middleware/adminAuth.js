@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 export const adminAuth = async (req, res, next) => {
   try {
-    const { token } = req.headers;
+    const token = req.headers.token;
 
     if (!token) {
       return res.status(401).json({ success: false, message: "Token is not available" });
@@ -11,7 +11,6 @@ export const adminAuth = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_S);
 
-    // Fixed: Check if decoded token has admin role
     if (decoded.role !== 'admin') {
       return res.status(401).json({ success: false, message: "Invalid admin credentials" });
     }

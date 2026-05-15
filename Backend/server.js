@@ -6,6 +6,7 @@ import connectDB from "./config/MONGODB.js";
 import { connectCloudinary } from "./config/cloudinary.js";
 import { userRouter } from "./routes/userRoutes.js";
 import { requestRouter } from "./routes/requestRoutes.js";
+import { adminRouter } from "./routes/adminRoutes.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -33,21 +34,7 @@ connectCloudinary();
 // API Routes
 app.use("/api/user", userRouter);
 app.use("/api/requests", requestRouter);
-
-// Debug: Print all registered routes
-console.log("\n📋 Registered Routes:");
-app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-        console.log(`${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
-    } else if (middleware.name === 'router') {
-        middleware.handle.stack.forEach((handler) => {
-            if (handler.route) {
-                console.log(`${Object.keys(handler.route.methods)} /api/user${handler.route.path}`);
-            }
-        });
-    }
-});
-console.log("");
+app.use("/api/admin", adminRouter);  // <-- ADD THIS LINE
 
 // Health check endpoint
 app.get('/', (req, res) => {
@@ -68,4 +55,8 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log(`\n🩸 Server running on port: ${port}`);
     console.log(`📡 API URL: http://localhost:${port}\n`);
+    console.log("Available routes:");
+    console.log("  - /api/user/*");
+    console.log("  - /api/requests/*");
+    console.log("  - /api/admin/*");
 });

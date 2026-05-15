@@ -1,43 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import Add from "./pages/Add"
-import List from "./pages/List"
-import Orders from './pages/Orders'
-import Navbar from './components/Navbar'
-import Sidebar from './components/Sidebar'
-import Login from './components/Login'
- import { ToastContainer, toast } from 'react-toastify';
-import { Route, Routes } from 'react-router-dom'
-export const backendUrl = import.meta.env.VITE_BACKEND_URL;
-export const currnecy = "$"
-export default function App() {
-  const [token,setToken]=useState(localStorage.getItem('token')?localStorage.getItem('token'):''
-  )
-  useEffect(()=>{
-localStorage.setItem('token',token)
-  },[token])
+// admin-frontend/src/App.jsx
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import AdminLogin from './pages/AdminLogin';
+import AdminLayout from './components/AdminLayout';
+import Dashboard from './pages/Dashboard';
+import Users from './pages/Users';
+import Donors from './pages/Donors';
+import Requests from './pages/Requests';
+
+function App() {
+  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || '');
+
+  useEffect(() => {
+    localStorage.setItem('adminToken', adminToken);
+  }, [adminToken]);
 
   return (
-    <div className='bg-gray-50 min-h-screen'>
-      <ToastContainer/>
-      {
-        token ===""?<Login setToken={setToken} />:
-      
-      <>
-      <Navbar setToken={setToken}/>
-      <hr />
-     <div className='flex w-full'>
-      <Sidebar/>
-      <div className='w-[70%] mx-auto ml-[max(5vw,25px)] my-8 text-gray-600 text-base '>
-        <Routes>
-         <Route path='/*' token={token} element={<Add/>}/>
-         <Route path='/list' token={token}  element={<List/>}/>
-         <Route path='/order' token={token}  element={<Orders/>}/>
-     </Routes>
-      </div>
-  
-     </div>
-      </>}
-    
-    </div>
-  )
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Routes>
+        <Route path="/login" element={<AdminLogin setAdminToken={setAdminToken} />} />
+        <Route path="/" element={adminToken ? <AdminLayout setAdminToken={setAdminToken} /> : <Navigate to="/login" />}>
+          <Route index element={<Navigate to="/dashboard" />} />
+          <Route path="dashboard" element={<Dashboard adminToken={adminToken} />} />
+          <Route path="users" element={<Users adminToken={adminToken} />} />
+          <Route path="donors" element={<Donors adminToken={adminToken} />} />
+          <Route path="requests" element={<Requests adminToken={adminToken} />} />
+        </Route>
+      </Routes>
+    </>
+  );
 }
+
+export default App;

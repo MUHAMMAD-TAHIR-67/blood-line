@@ -9,7 +9,8 @@ import {
     getAllDonors,
     getSingleDonor,
     toggleDonorAvailability,
-    getUrgentDonors
+    getUrgentDonors,
+    getDonationHistory
 } from "../controllers/userController.js";
 import { authuser } from "../middleware/auth.js";
 
@@ -35,6 +36,7 @@ userRouter.post("/donors/single", getSingleDonor);
 userRouter.post("/profile", authuser, getUserProfile);
 userRouter.post("/update-profile", authuser, updateUserProfile);
 userRouter.post("/toggle-availability", authuser, toggleDonorAvailability);
+userRouter.get("/donation-history", authuser, getDonationHistory);
 
 console.log("✅ userRouter configured with routes:");
 userRouter.stack.forEach(r => {

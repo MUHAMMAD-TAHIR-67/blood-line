@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Donors from './pages/Donors';
+import DonationHistory from './pages/DonationHistory';  // ADD THIS IMPORT
 import { BloodContext } from './context/BloodContext';
 
 // Become Donor Page - Smart routing based on user status
@@ -152,6 +153,7 @@ export default function Router() {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/become-donor" element={<BecomeDonorPage />} />
+      <Route path="/donation-history" element={<DonationHistory />} />  {/* ADD THIS LINE */}
     </Routes>
   );
 }

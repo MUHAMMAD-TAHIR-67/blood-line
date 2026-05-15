@@ -254,20 +254,7 @@ export const updateUserProfile = async (req, res) => {
     }
 };
 
-// ========== ADMIN LOGIN ==========
-export const adminLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_S);
-            res.json({ success: true, token, message: "Admin login successful" });
-        } else {
-            res.json({ success: false, message: "Invalid admin credentials" });
-        }
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
+
 
 // ========== GET ALL DONORS ==========
 // controllers/userController.js
@@ -361,6 +348,87 @@ export const getUrgentDonors = async (req, res) => {
         }).select('-password').limit(10);
         
         res.json({ success: true, donors });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Add this function to userController.js
+export const getDonationHistory = async (req, res) => {
+    try {
+        const donorId = req.userId;
+        
+        const donor = await userModel.findById(donorId).select('-password');
+        if (!donor || !donor.isDonor) {
+            return res.json({ success: false, message: "Not a registered donor" });
+        }
+
+        // Find all fulfilled requests where this donor participated
+        const donationHistory = await requestModel.find({
+            'requests.donorId': donorId,
+            status: 'fulfilled'
+        }).sort({ fulfilledDate: -1 });
+
+        // Calculate next eligible date (90 days after last donation)
+        const lastDonation = donationHistory[0];
+        let nextEligibleDate = null;
+        let daysUntilEligible = null;
+
+        if (lastDonation && lastDonation.fulfilledDate) {
+            const lastDate = new Date(lastDonation.fulfilledDate);
+            nextEligibleDate = new Date(lastDate);
+            nextEligibleDate.setDate(lastDate.getDate() + 90);
+            
+            const today = new Date();
+            const diffTime = nextEligibleDate - today;
+            daysUntilEligible = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Calculate total units donated
+        let totalUnitsDonated = 0;
+        donationHistory.forEach(request => {
+            const donorEntry = request.requests.find(r => r.donorId.toString() === donorId);
+            if (donorEntry) {
+                totalUnitsDonated += donorEntry.units || 1;
+            }
+        });
+
+        res.json({
+            success: true,
+            donationHistory: donationHistory.map(request => ({
+                requestId: request._id,
+                requestNumber: request.requestNumber,
+                patientName: request.patientInfo?.name,
+                hospital: request.patientInfo?.hospital,
+                bloodGroup: request.patientInfo?.bloodGroup,
+                units: request.requests.find(r => r.donorId.toString() === donorId)?.units || 1,
+                fulfilledDate: request.fulfilledDate,
+                urgency: request.urgency
+            })),
+            stats: {
+                totalDonations: donationHistory.length,
+                totalUnitsDonated,
+                lastDonationDate: donationHistory[0]?.fulfilledDate || null,
+                nextEligibleDate,
+                daysUntilEligible: daysUntilEligible < 0 ? 0 : daysUntilEligible,
+                isEligible: daysUntilEligible <= 0
+            }
+        });
+    } catch (error) {
+        console.error("Donation history error:", error);
+        res.json({ success: false, message: error.message });
+    }
+};
+// In userController.js - Add/verify this function exists
+export const adminLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_S);
+            res.json({ success: true, token, message: "Admin login successful" });
+        } else {
+            res.json({ success: false, message: "Invalid admin credentials" });
+        }
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

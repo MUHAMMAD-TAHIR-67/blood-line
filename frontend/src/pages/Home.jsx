@@ -40,7 +40,7 @@ const BecomeDonor = ({ user, token }) => {
   // If user is logged in but NOT a donor yet
   if (token && !user?.isDonor) {
     return (
-      <div className='my-16 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-2xl p-8 md:p-12 text-center'>
+      <div className='my-16 bg-gradient-to-r from-red-800 to-red-900 text-white rounded-2xl p-8 md:p-12 text-center'>
         <h2 className='text-3xl md:text-4xl font-bold mb-4'>Ready to Save Lives?</h2>
         <p className='text-lg mb-4 max-w-2xl mx-auto opacity-90'>
           You're just one step away from becoming a blood donor. Add your blood group and details to start helping others!
@@ -66,7 +66,7 @@ const BecomeDonor = ({ user, token }) => {
 
   // If user is NOT logged in
   return (
-    <div className='my-16 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-2xl p-8 md:p-12 text-center'>
+    <div className='my-16 bg-gradient-to-r from-red-700 to-red-800 text-white rounded-2xl p-8 md:p-12 text-center'>
       <h2 className='text-3xl md:text-4xl font-bold mb-4'>Become a Blood Donor Today</h2>
       <p className='text-lg mb-8 max-w-2xl mx-auto opacity-90'>
         Join our community of life-savers. Your donation can give someone another chance at life.

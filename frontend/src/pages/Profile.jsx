@@ -85,6 +85,7 @@ export default function Profile() {
         setUser(data.user);
         setEditing(false);
         toast.success('Profile updated successfully!');
+        fetchProfile(); // Refresh to get updated donor status
       } else {
         toast.error(data.message);
       }
@@ -95,6 +96,20 @@ export default function Profile() {
   };
 
   const handleBecomeDonor = async () => {
+    // Validate required fields
+    if (!formData.bloodGroup) {
+      toast.error('Please select blood group');
+      return;
+    }
+    if (!formData.age || formData.age < 18 || formData.age > 65) {
+      toast.error('Age must be between 18 and 65');
+      return;
+    }
+    if (!formData.weight || formData.weight < 50) {
+      toast.error('Weight must be at least 50 kg');
+      return;
+    }
+
     try {
       const { data } = await axios.post(
         `${backendUrl}/api/user/update-profile`,
@@ -111,8 +126,9 @@ export default function Profile() {
 
       if (data.success) {
         setUser(data.user);
+        setEditing(false);
         toast.success('You are now registered as a donor! 🩸');
-        fetchProfile();
+        fetchProfile(); // Refresh to show donor features
       } else {
         toast.error(data.message);
       }
@@ -176,10 +192,10 @@ export default function Profile() {
             <p className='text-gray-500 text-sm'>{user.email}</p>
             
             {/* Donor Badge */}
-            {user.isDonor && (
+            {user.isDonor ? (
               <div className='mt-3'>
                 <span className='px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium'>
-                   Blood Donor
+                  🩸 Blood Donor
                 </span>
                 {user.donorInfo?.verified && (
                   <span className='ml-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium'>
@@ -187,9 +203,15 @@ export default function Profile() {
                   </span>
                 )}
               </div>
+            ) : (
+              <div className='mt-3'>
+                <span className='px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium'>
+                  Not a Donor Yet
+                </span>
+              </div>
             )}
 
-            {/* Donor Stats */}
+            {/* Donor Stats - Only show if donor */}
             {user.isDonor && (
               <div className='mt-4 grid grid-cols-2 gap-2 text-center'>
                 <div className='bg-gray-50 rounded-lg p-3'>
@@ -207,31 +229,43 @@ export default function Profile() {
 
             {/* Actions */}
             <div className='mt-4 space-y-2'>
-              {!user.isDonor && (
+              {!user.isDonor ? (
+                // Show Become Donor Button
                 <button
                   onClick={() => setEditing(true)}
                   className='w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition'
                 >
-                   Become a Donor
+                  🩸 Become a Donor
                 </button>
+              ) : (
+                // Show Donor Actions
+                <>
+                  <button
+                    onClick={handleToggleAvailability}
+                    className={`w-full py-2 rounded-lg font-semibold transition ${
+                      user.donorInfo?.available
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
+                  >
+                    {user.donorInfo?.available ? '✅ Available for Donation' : '❌ Set as Available'}
+                  </button>
+                  
+                  {/* DONATION HISTORY BUTTON - This will show for donors */}
+                  <button
+                    onClick={() => navigate('/donation-history')}
+                    className='w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2'
+                  >
+                    📜 View Donation History
+                  </button>
+                </>
               )}
-              {user.isDonor && (
-                <button
-                  onClick={handleToggleAvailability}
-                  className={`w-full py-2 rounded-lg font-semibold transition ${
-                    user.donorInfo?.available
-                      ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                  }`}
-                >
-                  {user.donorInfo?.available ? 'Available for Donation' : 'Set as Available'}
-                </button>
-              )}
+              
               <button
                 onClick={() => setEditing(!editing)}
                 className='w-full border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-50 transition'
               >
-                Edit Profile
+                ✏️ Edit Profile
               </button>
             </div>
           </div>
@@ -240,9 +274,11 @@ export default function Profile() {
         {/* Right Column - Details */}
         <div className='md:col-span-2'>
           {editing ? (
-            /* EDIT MODE */
-            <form onSubmit={handleUpdate} className='bg-white rounded-xl shadow-md border p-6 space-y-4'>
-              <h3 className='text-lg font-bold text-gray-800 mb-4'>Edit Profile</h3>
+            /* EDIT MODE - Includes Donor Registration Form */
+            <form onSubmit={user.isDonor ? handleUpdate : handleBecomeDonor} className='bg-white rounded-xl shadow-md border p-6 space-y-4'>
+              <h3 className='text-lg font-bold text-gray-800 mb-4'>
+                {user.isDonor ? 'Edit Profile' : 'Register as a Donor'}
+              </h3>
               
               <div className='grid grid-cols-2 gap-4'>
                 <div>
@@ -288,50 +324,56 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Donor Fields */}
+              {/* Donor Fields - Required for registration */}
               <div className='border-t pt-4'>
-                <p className='font-semibold text-gray-700 mb-3'>Donor Information</p>
+                <p className='font-semibold text-gray-700 mb-3'>Donor Information {!user.isDonor && <span className='text-red-500'>*</span>}</p>
                 <div className='grid grid-cols-3 gap-4'>
                   <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Blood Group</label>
+                    <label className='block text-sm text-gray-500 mb-1'>Blood Group {!user.isDonor && '*'}</label>
                     <select
                       value={formData.bloodGroup}
                       onChange={(e) => setFormData(prev => ({ ...prev, bloodGroup: e.target.value }))}
                       className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
+                      required={!user.isDonor}
                     >
-                      <option value="">Select</option>
+                      <option value="">Select Blood Group</option>
                       {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
                         <option key={bg} value={bg}>{bg}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Age</label>
+                    <label className='block text-sm text-gray-500 mb-1'>Age {!user.isDonor && '* (18-65)'}</label>
                     <input
                       value={formData.age}
                       onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
                       className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
                       type="number"
+                      min="18"
+                      max="65"
+                      required={!user.isDonor}
                     />
                   </div>
                   <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Weight (kg)</label>
+                    <label className='block text-sm text-gray-500 mb-1'>Weight (kg) {!user.isDonor && '* (min 50)'}</label>
                     <input
                       value={formData.weight}
                       onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
                       className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
                       type="number"
+                      min="50"
+                      required={!user.isDonor}
                     />
                   </div>
                 </div>
                 <div className='mt-3'>
-                  <label className='block text-sm text-gray-500 mb-1'>Medical Conditions</label>
+                  <label className='block text-sm text-gray-500 mb-1'>Medical Conditions (if any)</label>
                   <input
                     value={formData.medicalConditions}
                     onChange={(e) => setFormData(prev => ({ ...prev, medicalConditions: e.target.value }))}
                     className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
                     type="text"
-                    placeholder="e.g., None, Diabetes"
+                    placeholder="e.g., None, Diabetes, Blood Pressure"
                   />
                 </div>
                 <div className='mt-3'>
@@ -341,14 +383,14 @@ export default function Profile() {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
                     rows="2"
-                    placeholder="Tell us about yourself..."
+                    placeholder="Tell us why you want to donate blood..."
                   />
                 </div>
               </div>
 
               <div className='flex gap-3 pt-2'>
                 <button type='submit' className='flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700'>
-                  Save Changes
+                  {user.isDonor ? 'Save Changes' : 'Register as Donor 🩸'}
                 </button>
                 <button type='button' onClick={() => setEditing(false)} className='flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-50'>
                   Cancel
@@ -366,12 +408,12 @@ export default function Profile() {
                   <p className='font-medium text-gray-800'>{user.name || 'Not set'}</p>
                 </div>
                 <div>
-                  <p className='text-sm text-gray-500'>Email</p>
-                  <p className='font-medium text-gray-800'>{user.email || 'Not set'}</p>
-                </div>
-                <div>
                   <p className='text-sm text-gray-500'>Phone</p>
                   <p className='font-medium text-gray-800'>{user.phone || 'Not set'}</p>
+                </div>
+                <div>
+                  <p className='text-sm text-gray-500'>Email</p>
+                  <p className='font-medium text-gray-800'>{user.email || 'Not set'}</p>
                 </div>
                 <div>
                   <p className='text-sm text-gray-500'>City</p>
@@ -379,52 +421,48 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Donor Info */}
+              {/* Donor Info - Only show if donor */}
               {user.isDonor && (
-                <>
-                  <div className='border-t pt-4'>
-                    <h3 className='text-lg font-bold text-gray-800 mb-4'>Donor Information</h3>
-                    <div className='grid grid-cols-3 gap-4'>
-                      <div>
-                        <p className='text-sm text-gray-500'>Blood Group</p>
-                        <p className='font-bold text-red-600 text-lg'>{user.bloodGroup || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className='text-sm text-gray-500'>Age</p>
-                        <p className='font-medium'>{user.age || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className='text-sm text-gray-500'>Weight</p>
-                        <p className='font-medium'>{user.weight ? `${user.weight} kg` : 'N/A'}</p>
-                      </div>
+                <div className='border-t pt-4'>
+                  <h3 className='text-lg font-bold text-gray-800 mb-4'>Donor Information</h3>
+                  <div className='grid grid-cols-3 gap-4'>
+                    <div>
+                      <p className='text-sm text-gray-500'>Blood Group</p>
+                      <p className='font-bold text-red-600 text-lg'>{user.bloodGroup || 'N/A'}</p>
                     </div>
-                    {user.donorInfo?.medicalConditions && (
-                      <div className='mt-3'>
-                        <p className='text-sm text-gray-500'>Medical Conditions</p>
-                        <p className='font-medium'>{user.donorInfo.medicalConditions}</p>
-                      </div>
-                    )}
-                    {user.donorInfo?.description && (
-                      <div className='mt-3'>
-                        <p className='text-sm text-gray-500'>About</p>
-                        <p className='text-gray-700'>{user.donorInfo.description}</p>
-                      </div>
-                    )}
-                    {user.donorInfo?.lastDonationDate && (
-                      <div className='mt-3'>
-                        <p className='text-sm text-gray-500'>Last Donation</p>
-                        <p className='font-medium'>{new Date(user.donorInfo.lastDonationDate).toLocaleDateString()}</p>
-                      </div>
-                    )}
+                    <div>
+                      <p className='text-sm text-gray-500'>Age</p>
+                      <p className='font-medium'>{user.age || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-gray-500'>Weight</p>
+                      <p className='font-medium'>{user.weight ? `${user.weight} kg` : 'N/A'}</p>
+                    </div>
                   </div>
-                </>
+                  {user.donorInfo?.medicalConditions && (
+                    <div className='mt-3'>
+                      <p className='text-sm text-gray-500'>Medical Conditions</p>
+                      <p className='font-medium'>{user.donorInfo.medicalConditions}</p>
+                    </div>
+                  )}
+                  {user.donorInfo?.description && (
+                    <div className='mt-3'>
+                      <p className='text-sm text-gray-500'>About</p>
+                      <p className='text-gray-700'>{user.donorInfo.description}</p>
+                    </div>
+                  )}
+                  {user.donorInfo?.lastDonationDate && (
+                    <div className='mt-3'>
+                      <p className='text-sm text-gray-500'>Last Donation</p>
+                      <p className='font-medium'>{new Date(user.donorInfo.lastDonationDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
         </div>
       </div>
-      
     </div>
-    
   );
 }
