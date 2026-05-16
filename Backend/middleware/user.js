@@ -1,8 +1,8 @@
-// middleware/user.js
+
 import jwt from "jsonwebtoken";
 
 const user = async (req, res, next) => {
-  const { token } = req.headers; // Fixed: get token from headers
+  const { token } = req.headers; 
   
   if (!token) {
     return res.json({ success: false, message: 'Token is unauthorized, login again' });

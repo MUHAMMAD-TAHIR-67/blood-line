@@ -1,4 +1,4 @@
-// controllers/adminController.js
+
 import { userModel } from "../models/userModel.js";
 import { requestModel } from "../models/requestModel.js";
 
@@ -6,7 +6,6 @@ export const getDashboardStats = async (req, res) => {
     try {
         console.log("Fetching dashboard stats...");
         
-        // User statistics
         const totalUsers = await userModel.countDocuments();
         console.log("Total users:", totalUsers);
         
@@ -24,7 +23,6 @@ export const getDashboardStats = async (req, res) => {
             'donorInfo.available': true 
         });
 
-        // Request statistics
         const totalRequests = await requestModel.countDocuments();
         console.log("Total requests:", totalRequests);
         
@@ -38,26 +36,22 @@ export const getDashboardStats = async (req, res) => {
             status: 'pending'
         });
 
-        // Blood group distribution
         const bloodGroupStats = await userModel.aggregate([
             { $match: { isDonor: true, bloodGroup: { $ne: '', $exists: true } } },
             { $group: { _id: '$bloodGroup', count: { $sum: 1 } } },
             { $sort: { count: -1 } }
         ]);
 
-        // Recent users (last 10)
         const recentUsers = await userModel.find()
             .select('name email isDonor bloodGroup createdAt phone address')
             .sort({ createdAt: -1 })
             .limit(10);
 
-        // Recent requests (last 10)
         const recentRequests = await requestModel.find()
             .populate('requesterId', 'name email')
             .sort({ createdAt: -1 })
             .limit(10);
 
-        // Send response
         res.json({
             success: true,
             stats: {
@@ -211,10 +205,8 @@ export const deleteUser = async (req, res) => {
             return res.json({ success: false, message: "User not found" });
         }
 
-        // Delete all requests by this user
         await requestModel.deleteMany({ requesterId: id });
         
-        // Remove this user from donor lists in requests
         await requestModel.updateMany(
             { 'requests.donorId': id },
             { $pull: { requests: { donorId: id } } }
@@ -279,7 +271,6 @@ export const updateRequestStatus = async (req, res) => {
         if (status === 'fulfilled') {
             request.fulfilledDate = new Date();
             
-            // Update donor's donation count
             if (request.matchedDonorId) {
                 await userModel.findByIdAndUpdate(request.matchedDonorId, {
                     $inc: { 'donorInfo.donationCount': request.totalUnits || 1 },

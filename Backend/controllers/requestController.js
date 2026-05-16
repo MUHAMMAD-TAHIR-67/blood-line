@@ -1,9 +1,8 @@
-// controllers/requestController.js
+
 import { requestModel } from "../models/requestModel.js";
 import { userModel } from "../models/userModel.js";
 import Counter from '../models/counter.js';
 
-// ========== CREATE BLOOD REQUEST ==========
 export const createRequest = async (req, res) => {
     try {
         let counter = await Counter.findOneAndUpdate(
@@ -76,7 +75,6 @@ export const createRequest = async (req, res) => {
     }
 };
 
-// ========== GET USER'S SENT REQUESTS ==========
 export const getUserRequests = async (req, res) => {
     try {
         const userId = req.userId;
@@ -88,7 +86,6 @@ export const getUserRequests = async (req, res) => {
     }
 };
 
-// ========== GET INCOMING REQUESTS FOR DONOR ==========
 export const getIncomingRequests = async (req, res) => {
     try {
         const userId = req.userId;
@@ -106,7 +103,6 @@ export const getIncomingRequests = async (req, res) => {
     }
 };
 
-// ========== DONOR RESPONDS TO REQUEST ==========
 export const respondToRequest = async (req, res) => {
     try {
         const userId = req.userId;
@@ -161,7 +157,6 @@ export const respondToRequest = async (req, res) => {
     }
 };
 
-// ========== GET ALL REQUESTS (ADMIN) ==========
 export const getAllRequests = async (req, res) => {
     try {
         const { status, urgency, page = 1, limit = 20 } = req.body;
@@ -189,7 +184,6 @@ export const getAllRequests = async (req, res) => {
     }
 };
 
-// ========== GET SINGLE REQUEST DETAILS ==========
 export const getRequestDetails = async (req, res) => {
     try {
         const { id } = req.body;
@@ -204,7 +198,6 @@ export const getRequestDetails = async (req, res) => {
     }
 };
 
-// ========== GET URGENT REQUESTS ==========
 export const getUrgentRequests = async (req, res) => {
     try {
         const requests = await requestModel.find({ 
@@ -219,7 +212,6 @@ export const getUrgentRequests = async (req, res) => {
     }
 };
 
-// ========== CANCEL REQUEST ==========
 export const cancelRequest = async (req, res) => {
     try {
         const { id } = req.body;
@@ -242,9 +234,6 @@ export const cancelRequest = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-// controllers/requestController.js
-
-// ========== DONOR VOLUNTEERS TO HELP (Adds donor to existing request) ==========
 export const volunteerForRequest = async (req, res) => {
     try {
         const userId = req.userId;
@@ -252,7 +241,6 @@ export const volunteerForRequest = async (req, res) => {
 
         console.log("Volunteer for request:", { requestId, userId });
 
-        // Check if user is a donor
         const donor = await userModel.findById(userId);
         if (!donor || !donor.isDonor) {
             return res.json({ 
@@ -261,13 +249,11 @@ export const volunteerForRequest = async (req, res) => {
             });
         }
 
-        // Find the request
         const request = await requestModel.findById(requestId);
         if (!request) {
             return res.json({ success: false, message: "Request not found" });
         }
 
-        // Check if donor is already in the request
         const existingEntry = request.requests.find(
             r => r.donorId.toString() === userId.toString()
         );
@@ -279,7 +265,6 @@ export const volunteerForRequest = async (req, res) => {
             });
         }
 
-        // Check if request is still pending
         if (request.status !== 'pending') {
             return res.json({ 
                 success: false, 
@@ -287,16 +272,14 @@ export const volunteerForRequest = async (req, res) => {
             });
         }
 
-        // Add donor to the request
         request.requests.push({
             donorId: userId,
             donorName: donor.name,
             bloodGroup: donor.bloodGroup,
-            units: 1, // Default 1 unit, can be changed
+            units: 1, 
             donorStatus: 'pending'
         });
 
-        // Update total units if needed
         request.totalUnits = request.requests.reduce((sum, r) => sum + (r.units || 0), 0);
 
         await request.save();

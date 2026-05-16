@@ -1,9 +1,9 @@
-// admin-frontend/src/pages/Dashboard.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ;
 
 export default function Dashboard({ adminToken }) {
   const [stats, setStats] = useState({
@@ -76,7 +76,6 @@ export default function Dashboard({ adminToken }) {
         ))}
       </div>
 
-      {/* Blood Group Distribution */}
       {stats.bloodGroupDistribution && stats.bloodGroupDistribution.length > 0 && (
         <div className='mt-8 bg-white rounded-lg shadow-sm border p-5'>
           <h2 className='text-lg font-semibold text-gray-800 mb-4'>Blood Group Distribution</h2>
@@ -101,7 +100,6 @@ export default function Dashboard({ adminToken }) {
         </div>
       )}
 
-      {/* Recent Users */}
       {stats.recentUsers && stats.recentUsers.length > 0 && (
         <div className='mt-8 bg-white rounded-lg shadow-sm border p-5'>
           <h2 className='text-lg font-semibold text-gray-800 mb-4'>Recent Users</h2>

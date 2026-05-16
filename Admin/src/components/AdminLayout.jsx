@@ -1,4 +1,4 @@
-// admin-frontend/src/components/AdminLayout.jsx
+
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
@@ -13,10 +13,10 @@ export default function AdminLayout({ setAdminToken }) {
   };
 
   const navItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: '📊' },
-    { path: '/users', name: 'Users', icon: '👥' },
-    { path: '/donors', name: 'Donors', icon: '🩸' },
-    { path: '/requests', name: 'Requests', icon: '📋' },
+    { path: '/dashboard', name: 'Dashboard'  },
+    { path: '/users', name: 'Users' },
+    { path: '/donors', name: 'Donors' },
+    { path: '/requests', name: 'Requests' },
   ];
 
   return (
@@ -33,7 +33,7 @@ export default function AdminLayout({ setAdminToken }) {
       </div>
 
       <div className='flex'>
-        {/* Sidebar */}
+        
         <div className='w-56 min-h-[calc(100vh-65px)] border-r bg-white'>
           <div className='flex flex-col pt-5'>
             {navItems.map((item) => (
@@ -55,7 +55,6 @@ export default function AdminLayout({ setAdminToken }) {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className='flex-1 p-6'>
           <Outlet />
         </div>

@@ -1,4 +1,4 @@
-// controllers/userController.js
+
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import { userModel } from "../models/userModel.js";
@@ -9,7 +9,6 @@ const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_S);
 };
 
-// ========== USER LOGIN ==========
 export const Login = async (req, res) => {
     const { email, password } = req.body;
     
@@ -51,7 +50,6 @@ export const Login = async (req, res) => {
     }
 };
 
-// ========== USER REGISTRATION (WITH DONOR INFO) ==========
 export const register = async (req, res) => {
     try {
         const { 
@@ -161,7 +159,6 @@ export const register = async (req, res) => {
     }
 };
 
-// ========== GET USER PROFILE ==========
 export const getUserProfile = async (req, res) => {
     try {
         const userId = req.userId;
@@ -186,7 +183,6 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-// ========== UPDATE USER PROFILE / BECOME DONOR ==========
 export const updateUserProfile = async (req, res) => {
     try {
         const userId = req.userId;
@@ -256,18 +252,12 @@ export const updateUserProfile = async (req, res) => {
 
 
 
-// ========== GET ALL DONORS ==========
-// controllers/userController.js
-
-// ========== GET ALL DONORS (Exclude current user) ==========
 export const getAllDonors = async (req, res) => {
     try {
         const { bloodGroup, city, available, urgent, search, excludeUserId } = req.query;
         
-        // Base filter: must be a donor
         let filter = { isDonor: true };
         
-        // Exclude the current user if they provide their ID
         if (excludeUserId) {
             filter._id = { $ne: excludeUserId };
         }
@@ -299,7 +289,6 @@ export const getAllDonors = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-// ========== GET SINGLE DONOR DETAILS ==========
 export const getSingleDonor = async (req, res) => {
     try {
         const { id } = req.body;
@@ -315,7 +304,6 @@ export const getSingleDonor = async (req, res) => {
     }
 };
 
-// ========== TOGGLE DONOR AVAILABILITY ==========
 export const toggleDonorAvailability = async (req, res) => {
     try {
         const userId = req.userId;
@@ -338,7 +326,6 @@ export const toggleDonorAvailability = async (req, res) => {
     }
 };
 
-// ========== GET URGENT DONORS ==========
 export const getUrgentDonors = async (req, res) => {
     try {
         const donors = await userModel.find({
@@ -366,7 +353,6 @@ export const adminLogin = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-// controllers/userController.js - UNCOMMENT THIS SECTION (remove the //)
 
 export const getDonationHistory = async (req, res) => {
     try {
@@ -377,13 +363,11 @@ export const getDonationHistory = async (req, res) => {
             return res.json({ success: false, message: "Not a registered donor" });
         }
 
-        // Find all fulfilled requests where this donor participated
         const donationHistory = await requestModel.find({
             'requests.donorId': donorId,
             status: 'fulfilled'
         }).sort({ fulfilledDate: -1 });
 
-        // Calculate next eligible date (90 days after last donation)
         const lastDonation = donationHistory[0];
         let nextEligibleDate = null;
         let daysUntilEligible = null;
@@ -398,7 +382,6 @@ export const getDonationHistory = async (req, res) => {
             daysUntilEligible = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
-        // Calculate total units donated
         let totalUnitsDonated = 0;
         donationHistory.forEach(request => {
             const donorEntry = request.requests.find(r => r.donorId.toString() === donorId);

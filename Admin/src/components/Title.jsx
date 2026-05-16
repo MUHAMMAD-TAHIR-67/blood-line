@@ -1,4 +1,4 @@
-// admin-frontend/src/components/Title.jsx
+
 import React from 'react';
 
 export default function Title({ text1 = '', text2 = '' }) {

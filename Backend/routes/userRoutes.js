@@ -26,11 +26,10 @@ userRouter.get("/donors", getAllDonors);
 userRouter.get("/donors/urgent", getUrgentDonors);
 userRouter.post("/donors/single", getSingleDonor);
 
-// ============ PROTECTED ROUTES ============
 userRouter.post("/profile", authuser, getUserProfile);
 userRouter.post("/update-profile", authuser, updateUserProfile);
 userRouter.post("/toggle-availability", authuser, toggleDonorAvailability);
-userRouter.get("/donation-history", authuser, getDonationHistory);  // ADD THIS ROUTE
+userRouter.get("/donation-history", authuser, getDonationHistory);  
 
 console.log("✅ userRouter configured with routes:");
 

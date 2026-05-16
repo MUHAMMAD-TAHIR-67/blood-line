@@ -1,9 +1,8 @@
-// controllers/donorController.js
+
 import pkg from 'cloudinary';
 import { donorModel } from '../models/donorModel.js';
-const { v2: cloudinary } = pkg;
 
-// Add new donor (Admin only)
+
 export const addDonor = async (req, res) => {
     try {
         const { 
@@ -56,7 +55,6 @@ export const addDonor = async (req, res) => {
     }
 };
 
-// List all donors with filters
 export const listDonors = async (req, res) => {
     try {
         const { bloodGroup, city, available, urgent, search } = req.query;
@@ -86,10 +84,9 @@ export const listDonors = async (req, res) => {
     }
 };
 
-// Get single donor
 export const singleDonor = async (req, res) => {
     try {
-        const { id } = req.body; // Changed from params since route uses POST
+        const { id } = req.body; 
         const donor = await donorModel.findById(id);
         if (!donor) {
             return res.json({ success: false, message: "Donor not found" });
@@ -100,10 +97,9 @@ export const singleDonor = async (req, res) => {
     }
 };
 
-// Update donor
 export const updateDonor = async (req, res) => {
     try {
-        const { id, ...updates } = req.body; // Changed to get id from body
+        const { id, ...updates } = req.body; 
         const donor = await donorModel.findByIdAndUpdate(id, updates, { new: true });
         if (!donor) {
             return res.json({ success: false, message: "Donor not found" });
@@ -117,7 +113,7 @@ export const updateDonor = async (req, res) => {
 // Remove donor
 export const removeDonor = async (req, res) => {
     try {
-        const { id } = req.body; // Changed to get id from body
+        const { id } = req.body; 
         await donorModel.findByIdAndDelete(id);
         res.json({ success: true, message: "Donor removed successfully" });
     } catch (error) {
@@ -125,10 +121,9 @@ export const removeDonor = async (req, res) => {
     }
 };
 
-// Toggle donor availability
 export const toggleAvailability = async (req, res) => {
     try {
-        const { id } = req.body; // Changed to get id from body
+        const { id } = req.body; 
         const donor = await donorModel.findById(id);
         if (!donor) {
             return res.json({ success: false, message: "Donor not found" });
@@ -141,7 +136,6 @@ export const toggleAvailability = async (req, res) => {
     }
 };
 
-// Get urgent donors
 export const getUrgentDonors = async (req, res) => {
     try {
         const donors = await donorModel.find({ urgent: true, available: true }).limit(10);
@@ -151,7 +145,6 @@ export const getUrgentDonors = async (req, res) => {
     }
 };
 
-// Get donors by blood group
 export const getDonorsByBloodGroup = async (req, res) => {
     try {
         const { bloodGroup } = req.body;

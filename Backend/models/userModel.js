@@ -1,4 +1,4 @@
-// models/userModel.js
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
         state: String,
         zipcode: String
     },
-    // Blood Donor Information (all users can be donors)
     bloodGroup: { 
         type: String,
         enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', ''],
@@ -20,14 +19,14 @@ const userSchema = new mongoose.Schema({
     },
     age: { type: Number },
     weight: { type: Number }, // in kg
-    isDonor: { type: Boolean, default: false }, // User chooses to be visible as donor
+    isDonor: { type: Boolean, default: false }, 
     donorInfo: {
         available: { type: Boolean, default: true },
         lastDonationDate: { type: Date },
         donationCount: { type: Number, default: 0 },
         medicalConditions: { type: String },
         description: { type: String },
-        image: { type: Array, default: [] }, // Donor photos
+        image: { type: Array, default: [] }, 
         verified: { type: Boolean, default: false },
         urgent: { type: Boolean, default: false },
         featured: { type: Boolean, default: false }
@@ -37,7 +36,6 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    // Blood requests made by user as a receiver
     bloodRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'requests' }],
     createdAt: { type: Date, default: Date.now }
 });

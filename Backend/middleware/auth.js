@@ -1,4 +1,4 @@
-// middleware/auth.js
+
 import jwt from "jsonwebtoken";
 
 export const authuser = async (req, res, next) => {
@@ -10,7 +10,7 @@ export const authuser = async (req, res, next) => {
   
   try {
     const decode = jwt.verify(token, process.env.JWT_S);
-    req.userId = decode.id; // Fixed: attach to req, not req.body
+    req.userId = decode.id; 
     next();
   } catch (error) {
     return res.json({ success: false, message: error.message });
