@@ -74,9 +74,6 @@ export default function AdminLogin({ setAdminToken }) {
           </button>
         </form>
         
-        <div className='mt-5 text-center text-xs text-gray-400'>
-          Default: admin@lifelink.com / admin123
-        </div>
       </div>
     </div>
   );

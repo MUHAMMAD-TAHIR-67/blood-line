@@ -23,7 +23,7 @@ export default function AdminLayout({ setAdminToken }) {
     <div className='min-h-screen bg-gray-50'>
       {/* Navbar */}
       <div className='flex items-center justify-between py-4 px-6 border-b bg-white'>
-        <img className='w-28 cursor-pointer' src={assets.logo} alt="LifeLink" />
+        <img className='w-28 cursor-pointer' src={assets.logo} alt="LifeLink" onClick={() => navigate('/dashboard')} />
         <button 
           onClick={handleLogout}
           className='bg-red-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition'

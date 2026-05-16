@@ -88,7 +88,7 @@ export default function Home() {
     <div>
       <Hero />
       
-      {/* Urgent Blood Requests Section */}
+      {/* Urgent Blood Requests Section - KEPT INTACT */}
       {urgentRequests && urgentRequests.length > 0 && <UrgentRequests />}
       
       {/* Featured Donors Section */}
@@ -132,6 +132,124 @@ export default function Home() {
             <p className='text-gray-600 text-sm'>
               Join a community of heroes who are committed to saving lives every day.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* BMI & Donation Eligibility Section - NEW ADDITION */}
+      <div className='my-16'>
+        <div className='text-center mb-10'>
+          <Title text1={"BLOOD"} text2={"DONATION ELIGIBILITY"} />
+          <p className='text-gray-600 max-w-2xl mx-auto mt-4'>
+            Check if you meet the basic requirements to donate blood
+          </p>
+        </div>
+        
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+          {/* Basic Requirements Card */}
+          <div className='bg-white rounded-xl shadow-md p-6 border hover:shadow-lg transition'>
+            <div className='flex items-center gap-3 mb-4'>
+              
+              <h3 className='font-bold text-xl text-gray-800'>Basic Requirements</h3>
+            </div>
+            <ul className='space-y-3 text-gray-600'>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>Age between <strong>18-65 years</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>Weight at least <strong>50 kg</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>BMI between <strong>18.5 - 30</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>No serious medical conditions</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>Not taking blood thinning medications</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-green-500'>✓</span>
+                <span>Hemoglobin level above <strong>12.5 g/dL</strong></span>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Before You Donate Card */}
+          <div className='bg-gradient-to-r from-red-50 to-orange-50 rounded-xl shadow-md p-6 border hover:shadow-lg transition'>
+            <div className='flex items-center gap-3 mb-4'>
+             
+              <h3 className='font-bold text-xl text-gray-800'>Before You Donate</h3>
+            </div>
+            <ul className='space-y-3 text-gray-600'>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Get <strong>7-8 hours</strong> of sleep</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Eat iron-rich foods (spinach, meat, beans)</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Drink <strong>plenty of water</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Avoid alcohol <strong>24 hours</strong> before</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Eat a <strong>healthy meal</strong> before donation</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-red-500'>•</span>
+                <span>Avoid smoking before donation</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* After Donation Tips Card */}
+        <div className='mt-6 bg-blue-50 rounded-xl shadow-md p-6 border'>
+          <div className='flex items-center gap-3 mb-4'>
+           
+            <h3 className='font-bold text-xl text-gray-800'>After You Donate</h3>
+          </div>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <ul className='space-y-2 text-gray-600'>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Rest for <strong>10-15 minutes</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Eat a snack and drink fluids</span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Keep the bandage on for <strong>4-5 hours</strong></span>
+              </li>
+            </ul>
+            <ul className='space-y-2 text-gray-600'>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Avoid heavy lifting for <strong>24 hours</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Drink extra fluids for <strong>48 hours</strong></span>
+              </li>
+              <li className='flex items-center gap-3'>
+                <span className='text-blue-500'>✓</span>
+                <span>Contact us if you feel unwell</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

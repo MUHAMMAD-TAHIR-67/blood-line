@@ -353,7 +353,21 @@ export const getUrgentDonors = async (req, res) => {
     }
 };
 
-// Add this function to userController.js
+export const adminLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_S);
+            res.json({ success: true, token, message: "Admin login successful" });
+        } else {
+            res.json({ success: false, message: "Invalid admin credentials" });
+        }
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+// controllers/userController.js - UNCOMMENT THIS SECTION (remove the //)
+
 export const getDonationHistory = async (req, res) => {
     try {
         const donorId = req.userId;
@@ -416,20 +430,6 @@ export const getDonationHistory = async (req, res) => {
         });
     } catch (error) {
         console.error("Donation history error:", error);
-        res.json({ success: false, message: error.message });
-    }
-};
-// In userController.js - Add/verify this function exists
-export const adminLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_S);
-            res.json({ success: true, token, message: "Admin login successful" });
-        } else {
-            res.json({ success: false, message: "Invalid admin credentials" });
-        }
-    } catch (error) {
         res.json({ success: false, message: error.message });
     }
 };

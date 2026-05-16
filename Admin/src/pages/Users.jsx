@@ -19,7 +19,9 @@ export default function Users({ adminToken }) {
       const { data } = await axios.get(`${BACKEND_URL}/api/admin/users?search=${search}`, {
         headers: { token: adminToken }
       });
-      if (data.success) setUsers(data.users);
+      if (data.success) {
+        setUsers(data.users);
+      }
     } catch (error) {
       toast.error('Failed to fetch users');
     } finally {
@@ -28,7 +30,7 @@ export default function Users({ adminToken }) {
   };
 
   const handleDelete = async (id, name) => {
-    if (confirm(`Delete ${name}?`)) {
+    if (window.confirm(`Delete ${name}? This cannot be undone.`)) {
       try {
         await axios.delete(`${BACKEND_URL}/api/admin/users/${id}`, {
           headers: { token: adminToken }
@@ -89,23 +91,23 @@ export default function Users({ adminToken }) {
                   <td className='p-3'>
                     <p className='font-medium'>{user.name}</p>
                     <p className='text-xs text-gray-500'>{user.email}</p>
-                  </td>
+                   </td>
                   <td className='p-3'>
                     <p>{user.phone || '-'}</p>
                     <p className='text-xs text-gray-500'>{user.address?.city || '-'}</p>
-                  </td>
+                   </td>
                   <td className='p-3'>
                     {user.isDonor ? (
                       <span className='px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700'>
                         {user.bloodGroup || 'N/A'}
                       </span>
                     ) : '-'}
-                  </td>
+                   </td>
                   <td className='p-3'>
                     <span className={`px-2 py-0.5 rounded-full text-xs ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100'}`}>
                       {user.role || 'user'}
                     </span>
-                  </td>
+                   </td>
                   <td className='p-3'>
                     <div className='flex gap-2'>
                       {user.isDonor && !user.donorInfo?.verified && (
@@ -117,7 +119,7 @@ export default function Users({ adminToken }) {
                         Delete
                       </button>
                     </div>
-                  </td>
+                   </td>
                 </tr>
               ))
             )}

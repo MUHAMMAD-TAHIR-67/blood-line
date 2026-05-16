@@ -11,7 +11,6 @@ import Login from './pages/Login';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Donors from './pages/Donors';
-import DonationHistory from './pages/DonationHistory';  // ADD THIS IMPORT
 import { BloodContext } from './context/BloodContext';
 
 // Become Donor Page - Smart routing based on user status
@@ -55,19 +54,23 @@ const BecomeDonorPage = () => {
         
         {/* Requirements */}
         <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8 text-left'>
-          <p className='font-semibold text-yellow-800 mb-3'>📋 Requirements to become a donor:</p>
+          <p className='font-semibold text-yellow-800 mb-3'> Requirements to become a donor:</p>
           <ul className='space-y-2 text-sm text-yellow-700'>
             <li className='flex items-center gap-2'>
-              <span>✅</span> Be between 18-65 years old
+             
+                <span className='text-blue-500'>✓</span> Be between 18-65 years old
             </li>
             <li className='flex items-center gap-2'>
-              <span>✅</span> Weight at least 50 kg
+              
+                <span className='text-blue-500'>✓</span> Weight at least 50 kg
             </li>
             <li className='flex items-center gap-2'>
-              <span>✅</span> Know your blood group
+              
+                <span className='text-blue-500'>✓</span> Know your blood group
             </li>
             <li className='flex items-center gap-2'>
-              <span>✅</span> Be in good health
+              
+                <span className='text-blue-500'>✓</span> Be in good health
             </li>
           </ul>
         </div>
@@ -116,7 +119,7 @@ const BecomeDonorPage = () => {
               ? 'bg-green-200 text-green-800' 
               : 'bg-gray-200 text-gray-600'
           }`}>
-            {user?.donorInfo?.available ? '🟢 Available for Donation' : '🔴 Currently Unavailable'}
+            {user?.donorInfo?.available ? 'Available for Donation' : 'Currently Unavailable'}
           </span>
         </div>
       </div>
@@ -126,13 +129,13 @@ const BecomeDonorPage = () => {
           onClick={() => navigate('/incoming-requests')}
           className='bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition'
         >
-          🔔 View Incoming Requests
+          View Incoming Requests
         </button>
         <button 
           onClick={() => navigate('/profile')}
           className='border-2 border-red-600 text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 transition'
         >
-          👤 Manage Profile
+          Manage Profile
         </button>
       </div>
     </div>
@@ -153,7 +156,6 @@ export default function Router() {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/become-donor" element={<BecomeDonorPage />} />
-      <Route path="/donation-history" element={<DonationHistory />} />  {/* ADD THIS LINE */}
     </Routes>
   );
 }

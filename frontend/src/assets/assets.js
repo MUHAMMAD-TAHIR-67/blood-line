@@ -6,7 +6,7 @@ import logo from './logo.png'
 // ❗ If these files don't exist, comment them out
 // import hero_img from './hero_img.png'
 import cart_icon from './cart_icon.png'
-// import bin_icon from './bin_icon.png'
+import bin_icon from './bin_icon.png'
 // import dropdown_icon from './dropdown_icon.png'
 // import exchange_icon from './exchange_icon.png'
 import profile_icon from './profile_icon.png'
@@ -27,7 +27,7 @@ import profile_icon from './profile_icon.png'
 // ===== ASSETS EXPORT =====
 export const assets = {
   logo,
-  
+  bin_icon,
   cart_icon,
  
 //   dropdown_icon,

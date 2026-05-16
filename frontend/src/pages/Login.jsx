@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import { backendUrl, BloodContext } from '../context/BloodContext';
+import BMICalculator from '../components/BMICalculator';
 
 export default function Login() {
   const [currentState, setCurrentState] = useState('login');
@@ -20,24 +21,34 @@ export default function Login() {
   const [city, setCity] = useState('');
   const [street, setStreet] = useState('');
   
-  // Donor fields (optional)
+  // Donor fields
   const [wantToBeDonor, setWantToBeDonor] = useState(false);
   const [bloodGroup, setBloodGroup] = useState('');
-  const [age, setAge] = useState('');
-  const [weight, setWeight] = useState('');
   const [medicalConditions, setMedicalConditions] = useState('');
   const [description, setDescription] = useState('');
+  
+  // BMI Calculator state (age, weight, height are managed inside BMI Calculator)
+  const [eligibility, setEligibility] = useState({ eligible: false, age: '', weight: '', height: '' });
+  const [showBMICalculator, setShowBMICalculator] = useState(false);
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+  const handleEligibilityChange = (result) => {
+    setEligibility(result);
+  };
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    
+    // Check eligibility if trying to register as donor
+    if (currentState !== 'login' && wantToBeDonor && !eligibility.eligible) {
+      toast.error('You do not meet the eligibility requirements to become a donor');
+      return;
+    }
+    
     try {
       if (currentState === 'login') {
-        // Login
-        const { data } = await axios.post(`${backendUrl}/api/user/login`, { 
-          email, password 
-        });
+        const { data } = await axios.post(`${backendUrl}/api/user/login`, { email, password });
         if (data.success) {
           setToken(data.token);
           localStorage.setItem("token", data.token);
@@ -47,20 +58,16 @@ export default function Login() {
           toast.error(data.message || "Login failed");
         }
       } else {
-        // Register
         const registerData = {
           name,
           email,
           password,
           phone,
-          address: {
-            street,
-            city
-          },
+          address: { street, city },
           wantToBeDonor,
           bloodGroup: wantToBeDonor ? bloodGroup : undefined,
-          age: wantToBeDonor ? Number(age) : undefined,
-          weight: wantToBeDonor ? Number(weight) : undefined,
+          age: wantToBeDonor ? Number(eligibility.age) : undefined,
+          weight: wantToBeDonor ? Number(eligibility.weight) : undefined,
           medicalConditions: wantToBeDonor ? medicalConditions : undefined,
           description: wantToBeDonor ? description : undefined,
         };
@@ -141,11 +148,14 @@ export default function Login() {
               <input
                 type="checkbox"
                 checked={wantToBeDonor}
-                onChange={(e) => setWantToBeDonor(e.target.checked)}
+                onChange={(e) => {
+                  setWantToBeDonor(e.target.checked);
+                  setShowBMICalculator(e.target.checked);
+                }}
                 className='w-5 h-5 accent-red-600'
               />
               <span className='font-semibold text-red-700'>
-                🩸 I want to register as a Blood Donor
+                I want to register as a Blood Donor
               </span>
             </label>
             <p className='text-xs text-gray-500 mt-1 ml-8'>
@@ -153,66 +163,50 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Donor Fields - Only show if user wants to be donor */}
+          {/* Donor Fields - Combined with BMI Calculator */}
           {wantToBeDonor && (
             <div className='w-full space-y-4 border border-gray-200 rounded-lg p-4 bg-white'>
-              <p className='font-semibold text-gray-700 border-b pb-2'>Donor Information</p>
+              <p className='font-semibold text-gray-700 border-b pb-2'>Donor Information & Eligibility Check</p>
               
-              <div className='grid grid-cols-3 gap-4'>
-                <div>
-                  <label className='block text-sm text-gray-500 mb-1'>Blood Group *</label>
-                  <select
-                    onChange={(e) => setBloodGroup(e.target.value)}
-                    value={bloodGroup}
-                    className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500'
-                    required={wantToBeDonor}
-                  >
-                    <option value="">Select</option>
-                    {bloodGroups.map(bg => (
-                      <option key={bg} value={bg}>{bg}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className='block text-sm text-gray-500 mb-1'>Age *</label>
-                  <input
-                    onChange={(e) => setAge(e.target.value)}
-                    value={age}
-                    className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500'
-                    type="number"
-                    placeholder='18-65'
-                    min="18"
-                    max="65"
-                    required={wantToBeDonor}
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm text-gray-500 mb-1'>Weight (kg) *</label>
-                  <input
-                    onChange={(e) => setWeight(e.target.value)}
-                    value={weight}
-                    className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500'
-                    type="number"
-                    placeholder='Min 50'
-                    min="50"
-                    required={wantToBeDonor}
-                  />
-                </div>
+              {/* Blood Group Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>Blood Group *</label>
+                <select
+                  onChange={(e) => setBloodGroup(e.target.value)}
+                  value={bloodGroup}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500'
+                  required={wantToBeDonor}
+                >
+                  <option value="">Select Blood Group</option>
+                  {bloodGroups.map(bg => (
+                    <option key={bg} value={bg}>{bg}</option>
+                  ))}
+                </select>
               </div>
 
+              {/* BMI Calculator - Includes Age, Weight, Height, Health Conditions, Medications */}
+              <div className='mt-2'>
+                <BMICalculator 
+                  onEligibilityChange={handleEligibilityChange} 
+                  embedded={false}
+                />
+              </div>
+
+              {/* Medical Conditions (Additional) */}
               <div>
-                <label className='block text-sm text-gray-500 mb-1'>Medical Conditions (if any)</label>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>Additional Medical Conditions (if any)</label>
                 <input
                   onChange={(e) => setMedicalConditions(e.target.value)}
                   value={medicalConditions}
                   className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500'
                   type="text"
-                  placeholder='e.g., None, Diabetes, etc.'
+                  placeholder='e.g., None,...'
                 />
               </div>
 
+              {/* About You */}
               <div>
-                <label className='block text-sm text-gray-500 mb-1'>About You (optional)</label>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>About You (optional)</label>
                 <textarea
                   onChange={(e) => setDescription(e.target.value)}
                   value={description}
@@ -226,7 +220,7 @@ export default function Login() {
         </>
       )}
 
-      {/* Common Fields for Login & Register */}
+      {/* Common Fields */}
       <input
         onChange={(e) => setEmail(e.target.value)}
         value={email}
@@ -260,10 +254,21 @@ export default function Login() {
 
       <button 
         type="submit" 
-        className='w-full bg-red-600 text-white py-3 rounded-md font-semibold hover:bg-red-700 transition text-lg'
+        disabled={wantToBeDonor && !eligibility.eligible}
+        className={`w-full py-3 rounded-md font-semibold transition text-lg ${
+          wantToBeDonor && !eligibility.eligible
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-red-600 text-white hover:bg-red-700'
+        }`}
       >
         {currentState === 'login' ? "Sign In" : "Create Account"}
       </button>
+
+      {wantToBeDonor && !eligibility.eligible && (
+        <p className='text-xs text-red-500 text-center'>
+          Please fill in your Age, Weight, and Height in the BMI Calculator above to check eligibility
+        </p>
+      )}
     </form>
   );
 }

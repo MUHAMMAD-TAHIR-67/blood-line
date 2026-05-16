@@ -5,19 +5,19 @@ import Title from '../components/Title';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import BMICalculator from '../components/BMICalculator';
 
 export default function Profile() {
   const { token, user, setUser } = useContext(BloodContext);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [eligibility, setEligibility] = useState({ eligible: false, age: '', weight: '', height: '' });
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     city: '',
     street: '',
     bloodGroup: '',
-    age: '',
-    weight: '',
     medicalConditions: '',
     description: ''
   });
@@ -30,6 +30,10 @@ export default function Profile() {
     }
     fetchProfile();
   }, [token]);
+
+  const handleEligibilityChange = (result) => {
+    setEligibility(result);
+  };
 
   const fetchProfile = async () => {
     try {
@@ -46,11 +50,18 @@ export default function Profile() {
           city: data.user.address?.city || '',
           street: data.user.address?.street || '',
           bloodGroup: data.user.bloodGroup || '',
-          age: data.user.age || '',
-          weight: data.user.weight || '',
           medicalConditions: data.user.donorInfo?.medicalConditions || '',
           description: data.user.donorInfo?.description || ''
         });
+        // Set eligibility with existing age and weight if donor
+        if (data.user.isDonor && data.user.age && data.user.weight) {
+          setEligibility({
+            eligible: true,
+            age: data.user.age,
+            weight: data.user.weight,
+            height: data.user.height || 170
+          });
+        }
       }
     } catch (error) {
       console.error("Profile fetch error:", error);
@@ -73,8 +84,8 @@ export default function Profile() {
             street: formData.street
           },
           bloodGroup: formData.bloodGroup,
-          age: Number(formData.age),
-          weight: Number(formData.weight),
+          age: user.isDonor ? user.age : Number(eligibility.age),
+          weight: user.isDonor ? user.weight : Number(eligibility.weight),
           medicalConditions: formData.medicalConditions,
           description: formData.description,
         },
@@ -85,7 +96,7 @@ export default function Profile() {
         setUser(data.user);
         setEditing(false);
         toast.success('Profile updated successfully!');
-        fetchProfile(); // Refresh to get updated donor status
+        fetchProfile();
       } else {
         toast.error(data.message);
       }
@@ -95,18 +106,16 @@ export default function Profile() {
     }
   };
 
-  const handleBecomeDonor = async () => {
+  const handleBecomeDonor = async (e) => {
+    e.preventDefault();
+    
     // Validate required fields
     if (!formData.bloodGroup) {
       toast.error('Please select blood group');
       return;
     }
-    if (!formData.age || formData.age < 18 || formData.age > 65) {
-      toast.error('Age must be between 18 and 65');
-      return;
-    }
-    if (!formData.weight || formData.weight < 50) {
-      toast.error('Weight must be at least 50 kg');
+    if (!eligibility.eligible) {
+      toast.error('You do not meet the eligibility requirements');
       return;
     }
 
@@ -116,8 +125,8 @@ export default function Profile() {
         {
           becomeDonor: true,
           bloodGroup: formData.bloodGroup,
-          age: Number(formData.age),
-          weight: Number(formData.weight),
+          age: Number(eligibility.age),
+          weight: Number(eligibility.weight),
           medicalConditions: formData.medicalConditions,
           description: formData.description,
         },
@@ -128,7 +137,7 @@ export default function Profile() {
         setUser(data.user);
         setEditing(false);
         toast.success('You are now registered as a donor! 🩸');
-        fetchProfile(); // Refresh to show donor features
+        fetchProfile();
       } else {
         toast.error(data.message);
       }
@@ -180,7 +189,7 @@ export default function Profile() {
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-        {/* Left Column - Avatar & Basic Info */}
+        {/* Left Column */}
         <div className='md:col-span-1'>
           <div className='bg-white rounded-xl shadow-md border p-6 text-center'>
             <div className='w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4'>
@@ -191,11 +200,10 @@ export default function Profile() {
             <h2 className='text-xl font-bold text-gray-800'>{user.name}</h2>
             <p className='text-gray-500 text-sm'>{user.email}</p>
             
-            {/* Donor Badge */}
             {user.isDonor ? (
               <div className='mt-3'>
                 <span className='px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium'>
-                  🩸 Blood Donor
+                  Blood Donor
                 </span>
                 {user.donorInfo?.verified && (
                   <span className='ml-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium'>
@@ -211,7 +219,6 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Donor Stats - Only show if donor */}
             {user.isDonor && (
               <div className='mt-4 grid grid-cols-2 gap-2 text-center'>
                 <div className='bg-gray-50 rounded-lg p-3'>
@@ -227,18 +234,15 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Actions */}
             <div className='mt-4 space-y-2'>
               {!user.isDonor ? (
-                // Show Become Donor Button
                 <button
                   onClick={() => setEditing(true)}
                   className='w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition'
                 >
-                  🩸 Become a Donor
+                  Become a Donor
                 </button>
               ) : (
-                // Show Donor Actions
                 <>
                   <button
                     onClick={handleToggleAvailability}
@@ -248,16 +252,10 @@ export default function Profile() {
                         : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                     }`}
                   >
-                    {user.donorInfo?.available ? '✅ Available for Donation' : '❌ Set as Available'}
+                    {user.donorInfo?.available ? 'Available for Donation' : 'Set as Available'}
                   </button>
                   
-                  {/* DONATION HISTORY BUTTON - This will show for donors */}
-                  <button
-                    onClick={() => navigate('/donation-history')}
-                    className='w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2'
-                  >
-                    📜 View Donation History
-                  </button>
+                  
                 </>
               )}
               
@@ -265,16 +263,15 @@ export default function Profile() {
                 onClick={() => setEditing(!editing)}
                 className='w-full border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-50 transition'
               >
-                ✏️ Edit Profile
+                Edit Profile
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Column - Details */}
+        {/* Right Column */}
         <div className='md:col-span-2'>
           {editing ? (
-            /* EDIT MODE - Includes Donor Registration Form */
             <form onSubmit={user.isDonor ? handleUpdate : handleBecomeDonor} className='bg-white rounded-xl shadow-md border p-6 space-y-4'>
               <h3 className='text-lg font-bold text-gray-800 mb-4'>
                 {user.isDonor ? 'Edit Profile' : 'Register as a Donor'}
@@ -324,81 +321,94 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Donor Fields - Required for registration */}
-              <div className='border-t pt-4'>
-                <p className='font-semibold text-gray-700 mb-3'>Donor Information {!user.isDonor && <span className='text-red-500'>*</span>}</p>
-                <div className='grid grid-cols-3 gap-4'>
-                  <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Blood Group {!user.isDonor && '*'}</label>
-                    <select
-                      value={formData.bloodGroup}
-                      onChange={(e) => setFormData(prev => ({ ...prev, bloodGroup: e.target.value }))}
-                      className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
-                      required={!user.isDonor}
-                    >
-                      <option value="">Select Blood Group</option>
-                      {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
-                        <option key={bg} value={bg}>{bg}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Age {!user.isDonor && '* (18-65)'}</label>
-                    <input
-                      value={formData.age}
-                      onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                      className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
-                      type="number"
-                      min="18"
-                      max="65"
-                      required={!user.isDonor}
-                    />
-                  </div>
-                  <div>
-                    <label className='block text-sm text-gray-500 mb-1'>Weight (kg) {!user.isDonor && '* (min 50)'}</label>
-                    <input
-                      value={formData.weight}
-                      onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
-                      className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
-                      type="number"
-                      min="50"
-                      required={!user.isDonor}
-                    />
+              {/* Blood Group Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>Blood Group {!user.isDonor && '*'}</label>
+                <select
+                  value={formData.bloodGroup}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bloodGroup: e.target.value }))}
+                  className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
+                  required={!user.isDonor}
+                >
+                  <option value="">Select Blood Group</option>
+                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
+                    <option key={bg} value={bg}>{bg}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* BMI Calculator - Combined with Age, Weight, Health Check */}
+              {!user.isDonor && (
+                <div className='mt-2'>
+                  <BMICalculator onEligibilityChange={handleEligibilityChange} embedded={false} />
+                </div>
+              )}
+
+              {/* Show existing donor info if already donor */}
+              {user.isDonor && (
+                <div className='bg-gray-50 rounded-lg p-4'>
+                  <p className='text-sm text-gray-600'>Your donor information:</p>
+                  <div className='grid grid-cols-2 gap-2 mt-2'>
+                    <div>
+                      <p className='text-xs text-gray-500'>Age</p>
+                      <p className='font-medium'>{user.age} years</p>
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>Weight</p>
+                      <p className='font-medium'>{user.weight} kg</p>
+                    </div>
                   </div>
                 </div>
-                <div className='mt-3'>
-                  <label className='block text-sm text-gray-500 mb-1'>Medical Conditions (if any)</label>
-                  <input
-                    value={formData.medicalConditions}
-                    onChange={(e) => setFormData(prev => ({ ...prev, medicalConditions: e.target.value }))}
-                    className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
-                    type="text"
-                    placeholder="e.g., None, Diabetes, Blood Pressure"
-                  />
-                </div>
-                <div className='mt-3'>
-                  <label className='block text-sm text-gray-500 mb-1'>About You</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
-                    rows="2"
-                    placeholder="Tell us why you want to donate blood..."
-                  />
-                </div>
+              )}
+
+              {/* Medical Conditions */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>Medical Conditions (if any)</label>
+                <input
+                  value={formData.medicalConditions}
+                  onChange={(e) => setFormData(prev => ({ ...prev, medicalConditions: e.target.value }))}
+                  className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
+                  type="text"
+                  placeholder="e.g., None, Diabetes, Blood Pressure"
+                />
+              </div>
+
+              {/* About You */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>About You</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className='w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500'
+                  rows="2"
+                  placeholder="Tell us why you want to donate blood..."
+                />
               </div>
 
               <div className='flex gap-3 pt-2'>
-                <button type='submit' className='flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700'>
-                  {user.isDonor ? 'Save Changes' : 'Register as Donor 🩸'}
+                <button 
+                  type='submit' 
+                  disabled={!user.isDonor && !eligibility.eligible}
+                  className={`flex-1 py-2 rounded-lg font-semibold transition ${
+                    !user.isDonor && !eligibility.eligible
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-600 text-white hover:bg-red-700'
+                  }`}
+                >
+                  {user.isDonor ? 'Save Changes' : 'Register as Donor'}
                 </button>
                 <button type='button' onClick={() => setEditing(false)} className='flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-50'>
                   Cancel
                 </button>
               </div>
+
+              {!user.isDonor && !eligibility.eligible && (
+                <p className='text-xs text-red-500 text-center mt-2'>
+                  Please fill in your Age, Weight, and Height in the BMI Calculator above to check eligibility
+                </p>
+              )}
             </form>
           ) : (
-            /* VIEW MODE */
             <div className='bg-white rounded-xl shadow-md border p-6 space-y-6'>
               <h3 className='text-lg font-bold text-gray-800'>Personal Information</h3>
               
@@ -421,7 +431,6 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Donor Info - Only show if donor */}
               {user.isDonor && (
                 <div className='border-t pt-4'>
                   <h3 className='text-lg font-bold text-gray-800 mb-4'>Donor Information</h3>
@@ -449,12 +458,6 @@ export default function Profile() {
                     <div className='mt-3'>
                       <p className='text-sm text-gray-500'>About</p>
                       <p className='text-gray-700'>{user.donorInfo.description}</p>
-                    </div>
-                  )}
-                  {user.donorInfo?.lastDonationDate && (
-                    <div className='mt-3'>
-                      <p className='text-sm text-gray-500'>Last Donation</p>
-                      <p className='font-medium'>{new Date(user.donorInfo.lastDonationDate).toLocaleDateString()}</p>
                     </div>
                   )}
                 </div>

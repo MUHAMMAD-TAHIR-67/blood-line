@@ -18,35 +18,13 @@ export default function Donors({ adminToken }) {
       const { data } = await axios.get(`${BACKEND_URL}/api/admin/users?isDonor=true`, {
         headers: { token: adminToken }
       });
-      if (data.success) setDonors(data.users);
+      if (data.success) {
+        setDonors(data.users);
+      }
     } catch (error) {
       toast.error('Failed to fetch donors');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const toggleUrgent = async (id, current) => {
-    try {
-      await axios.post(`${BACKEND_URL}/api/admin/donors/${id}/urgent`, {}, {
-        headers: { token: adminToken }
-      });
-      toast.success(current ? 'Urgent removed' : 'Marked urgent');
-      fetchDonors();
-    } catch (error) {
-      toast.error('Failed to update');
-    }
-  };
-
-  const toggleFeatured = async (id, current) => {
-    try {
-      await axios.post(`${BACKEND_URL}/api/admin/donors/${id}/featured`, {}, {
-        headers: { token: adminToken }
-      });
-      toast.success(current ? 'Featured removed' : 'Marked featured');
-      fetchDonors();
-    } catch (error) {
-      toast.error('Failed to update');
     }
   };
 
@@ -62,14 +40,17 @@ export default function Donors({ adminToken }) {
               <th className='text-left p-3 font-medium text-gray-600'>Blood</th>
               <th className='text-left p-3 font-medium text-gray-600'>City</th>
               <th className='text-left p-3 font-medium text-gray-600'>Status</th>
-              <th className='text-left p-3 font-medium text-gray-600'>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="5" className='text-center p-8'>Loading...</td></tr>
+              <tr>
+                <td colSpan="4" className='text-center p-8'>Loading...</td>
+              </tr>
             ) : donors.length === 0 ? (
-              <tr><td colSpan="5" className='text-center p-8 text-gray-500'>No donors found</td></tr>
+              <tr>
+                <td colSpan="4" className='text-center p-8 text-gray-500'>No donors found</td>
+              </tr>
             ) : (
               donors.map((donor) => (
                 <tr key={donor._id} className='border-b hover:bg-gray-50'>
@@ -84,20 +65,8 @@ export default function Donors({ adminToken }) {
                   </td>
                   <td className='p-3'>{donor.address?.city || '-'}</td>
                   <td className='p-3'>
-                    <div className='flex gap-2'>
-                      {donor.donorInfo?.verified && <span className='text-green-600 text-xs'>✓</span>}
-                      {donor.donorInfo?.urgent && <span className='text-orange-600 text-xs'>Urgent</span>}
-                      {donor.donorInfo?.featured && <span className='text-yellow-600 text-xs'>★</span>}
-                    </div>
-                  </td>
-                  <td className='p-3'>
-                    <div className='flex gap-3'>
-                      <button onClick={() => toggleUrgent(donor._id, donor.donorInfo?.urgent)} className='text-orange-600 text-xs hover:underline'>
-                        {donor.donorInfo?.urgent ? 'Remove Urgent' : 'Urgent'}
-                      </button>
-                      <button onClick={() => toggleFeatured(donor._id, donor.donorInfo?.featured)} className='text-yellow-600 text-xs hover:underline'>
-                        {donor.donorInfo?.featured ? 'Unfeature' : 'Feature'}
-                      </button>
+                    <div className='flex gap-2 flex-wrap'>
+                      {donor.donorInfo?.verified && <span className='text-green-600 text-xs'>✓ Verified</span>}
                     </div>
                   </td>
                 </tr>

@@ -305,17 +305,7 @@ export default function Navbar() {
                      Incoming Requests
                   </button>
                   
-                  {/* NEW: Donation History Link for Mobile */}
-                  <button 
-                    onClick={() => handleNavClick('/donation-history')} 
-                    className={`flex items-center gap-3 px-6 py-3.5 text-left transition ${
-                      isActive('/donation-history') 
-                        ? 'bg-purple-100 text-purple-700 font-bold border-r-4 border-purple-600' 
-                        : 'bg-purple-50 text-purple-600 font-medium hover:bg-purple-100'
-                    }`}
-                  >
-                    Donation History
-                  </button>
+                 
                 </>
               )}
               
